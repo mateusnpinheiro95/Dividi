@@ -6,6 +6,7 @@ import type { Order } from '@/types';
 interface UseOrdersReturn {
   orders: Order[];
   addOrder: (order: Omit<Order, 'id'>) => void;
+  updateOrder: (id: string, updates: Partial<Omit<Order, 'id'>>) => void;
   removeOrder: (id: string) => void;
   getTotal: () => number;
 }
@@ -20,6 +21,15 @@ export function useOrders(): UseOrdersReturn {
         id: crypto.randomUUID(),
       };
       setOrders((prev) => [...prev, newOrder]);
+    },
+    [setOrders]
+  );
+
+  const updateOrder = useCallback(
+    (id: string, updates: Partial<Omit<Order, 'id'>>) => {
+      setOrders((prev) =>
+        prev.map((order) => (order.id === id ? { ...order, ...updates } : order))
+      );
     },
     [setOrders]
   );
@@ -41,6 +51,7 @@ export function useOrders(): UseOrdersReturn {
   return {
     orders,
     addOrder,
+    updateOrder,
     removeOrder,
     getTotal,
   };

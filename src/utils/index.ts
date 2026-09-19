@@ -2,6 +2,7 @@ export { formatCurrency, getInitials } from './format';
 export { migrateLegacyStorage } from './migrateStorage';
 export { buildSummaryText, shareSummary } from './shareSummary';
 export { resetCalculation } from './resetCalculation';
+export { parseReceiptText } from './parseReceiptText';
 
 /**
  * Formats a date using the Brazilian locale

@@ -4,6 +4,7 @@ export { Card } from './Card';
 export { PageHeader } from './PageHeader';
 export { OrderItem } from './OrderItem';
 export { AddOrderModal } from './AddOrderModal';
+export { OcrCaptureModal } from './OcrCaptureModal';
 export { BottomNavigation } from './BottomNavigation';
 export { PersonChip } from './PersonChip';
 export { AddPersonModal } from './AddPersonModal';

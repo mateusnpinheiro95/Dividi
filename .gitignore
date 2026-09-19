@@ -1,13 +1,16 @@
 # Dependencies
-node_modules
+node_modules/
 
 # Build
-dist
-dist-ssr
+dist/
+dist-ssr/
 *.local
 
+# Vite
+.vite/
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -23,19 +26,40 @@ lerna-debug.log*
 # Editor / OS
 .vscode/*
 !.vscode/extensions.json
-.idea
+.idea/
 .DS_Store
 Thumbs.db
+Desktop.ini
+ehthumbs.db
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+*~
+
+# Cursor (manter regras do projeto versionadas)
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
 
 # TypeScript / tooling caches
 *.tsbuildinfo
-.turbo
-.cache
+.turbo/
+.cache/
+.eslintcache
+.oxlintcache
 
 # Test / coverage (se adicionados no futuro)
-coverage
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+# Deploy / hosting (se usados no futuro)
+.vercel/
+.netlify/
+
+# Misc
+*.pem
+*.orig
