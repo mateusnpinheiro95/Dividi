@@ -6,6 +6,12 @@ alwaysApply: false
 
 # React / TypeScript
 
+## Idioma do código
+
+- **Identificadores em inglês**: arquivos, pastas, tipos, props, hooks, variáveis, constantes, rotas e keys de storage
+- **UI em português**: apenas strings exibidas na tela (labels, títulos, placeholders, `aria-label` voltados ao usuário)
+- Exemplos: `Order`, `Person`, `TipConfig`, `useTip`, `ROUTES.TIP` — nunca `Pedido`, `Pessoa`, `Gorjeta` no código
+
 ## Componentes
 
 - Funcionais com TypeScript; props tipadas em `interface`
@@ -43,3 +49,4 @@ import { Button } from '../../components/Button/Button';
 - `fetch` / axios / clientes HTTP para serviços externos
 - Componentes monolíticos; extrair UI e lógica
 - Classes CSS soltas fora do padrão Tailwind / `@layer`
+- Identificadores de código em português

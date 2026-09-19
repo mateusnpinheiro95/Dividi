@@ -1,22 +1,22 @@
-import type { Pedido } from '@/types';
+import type { Order } from '@/types';
 import { formatCurrency } from '@/utils';
 
 interface OrderItemProps {
-  pedido: Pedido;
+  order: Order;
   onRemove: (id: string) => void;
 }
 
-export const OrderItem = ({ pedido, onRemove }: OrderItemProps) => {
-  const subtotal = pedido.quantidade * pedido.valorUnitario;
+export const OrderItem = ({ order, onRemove }: OrderItemProps) => {
+  const subtotal = order.quantity * order.unitPrice;
 
   return (
     <article className="order-item-card">
-      <span className="quantity-badge" aria-label={`Quantidade: ${pedido.quantidade}`}>
-        {pedido.quantidade}x
+      <span className="quantity-badge" aria-label={`Quantidade: ${order.quantity}`}>
+        {order.quantity}x
       </span>
 
       <div className="flex-1 min-w-0">
-        <p className="text-base text-gray-900 truncate">{pedido.nome}</p>
+        <p className="text-base text-gray-900 truncate">{order.name}</p>
       </div>
 
       <p className="text-base font-semibold tabular-nums text-gray-900 shrink-0">
@@ -25,8 +25,8 @@ export const OrderItem = ({ pedido, onRemove }: OrderItemProps) => {
 
       <button
         type="button"
-        onClick={() => onRemove(pedido.id)}
-        aria-label={`Remover ${pedido.nome}`}
+        onClick={() => onRemove(order.id)}
+        aria-label={`Remover ${order.name}`}
         className="flex items-center justify-center size-11 -mr-2 text-gray-400 rounded-lg active:bg-gray-100 active:text-red-600 shrink-0"
       >
         <svg

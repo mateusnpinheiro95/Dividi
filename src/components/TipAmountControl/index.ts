@@ -1,0 +1,1 @@
+export { TipAmountControl } from './TipAmountControl';

@@ -1,24 +1,38 @@
-// Tipos globais da aplicação
+// Global application types
 
-export interface Pedido {
+export interface Order {
   id: string;
-  nome: string;
-  valorUnitario: number;
-  quantidade: number;
+  name: string;
+  unitPrice: number;
+  quantity: number;
 }
 
-export interface Mesa {
+export interface Table {
   id: string;
-  pedidos: Pedido[];
+  orders: Order[];
 }
 
-export interface Pessoa {
+export interface Person {
   id: string;
-  nome: string;
-  cor: string;
+  name: string;
+  color: string;
 }
 
-export interface DivisaoPedido {
-  pedidoId: string;
-  pessoaIds: string[];
+export interface OrderAssignment {
+  orderId: string;
+  personIds: string[];
+}
+
+export type TipType = 'percentage' | 'fixed';
+
+export interface TipConfig {
+  active: boolean;
+  type: TipType;
+  percentage: number;
+  fixedAmount: number;
+  participants: string[];
+  /** Whether the participants list has been initialized at least once */
+  initialized: boolean;
+  /** Person IDs already seen — used to detect new people and include them by default */
+  knownPersonIds: string[];
 }

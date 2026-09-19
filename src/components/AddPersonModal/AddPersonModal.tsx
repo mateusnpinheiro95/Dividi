@@ -6,22 +6,22 @@ import { getInitials } from '@/utils';
 interface AddPersonModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (nome: string) => void;
+  onAdd: (name: string) => void;
   nextColor: string;
 }
 
 interface AddPersonFormProps {
   onClose: () => void;
-  onAdd: (nome: string) => void;
+  onAdd: (name: string) => void;
   nextColor: string;
 }
 
 const AddPersonForm = ({ onClose, onAdd, nextColor }: AddPersonFormProps) => {
   const titleId = useId();
-  const nomeId = useId();
-  const [nome, setNome] = useState('');
+  const nameId = useId();
+  const [name, setName] = useState('');
 
-  const trimmed = nome.trim();
+  const trimmed = name.trim();
   const isValid = trimmed.length >= 2;
 
   const handleSubmit = (event: FormEvent) => {
@@ -50,14 +50,14 @@ const AddPersonForm = ({ onClose, onAdd, nextColor }: AddPersonFormProps) => {
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor={nomeId} className="text-[13px] text-gray-600">
+          <label htmlFor={nameId} className="text-[13px] text-gray-600">
             Nome
           </label>
           <input
-            id={nomeId}
+            id={nameId}
             type="text"
-            value={nome}
-            onChange={(e) => setNome(e.target.value)}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             placeholder="Ex.: Ana"
             className="input-field"
             autoFocus

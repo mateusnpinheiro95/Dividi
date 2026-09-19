@@ -1,27 +1,27 @@
 import { useEffect, useId, useState } from 'react';
-import type { Pedido, Pessoa } from '@/types';
+import type { Order, Person } from '@/types';
 import { formatCurrency, getInitials } from '@/utils';
 import { PersonChip } from '../PersonChip';
 
 interface OrderDivisionCardProps {
-  pedido: Pedido;
-  pessoasAtribuidas: Pessoa[];
-  todasPessoas: Pessoa[];
-  onAddPerson: (pessoaId: string) => void;
-  onRemovePerson: (pessoaId: string) => void;
+  order: Order;
+  assignedPeople: Person[];
+  allPeople: Person[];
+  onAddPerson: (personId: string) => void;
+  onRemovePerson: (personId: string) => void;
 }
 
 interface AssignPeopleSheetProps {
-  pedidoNome: string;
-  todasPessoas: Pessoa[];
+  orderName: string;
+  allPeople: Person[];
   assignedIds: Set<string>;
-  onToggle: (pessoaId: string) => void;
+  onToggle: (personId: string) => void;
   onClose: () => void;
 }
 
 const AssignPeopleSheet = ({
-  pedidoNome,
-  todasPessoas,
+  orderName,
+  allPeople,
   assignedIds,
   onToggle,
   onClose,
@@ -54,21 +54,21 @@ const AssignPeopleSheet = ({
         <h2 id={titleId} className="text-lg font-semibold text-gray-900 mb-1">
           Quem consumiu?
         </h2>
-        <p className="text-sm text-gray-600 mb-4 truncate">{pedidoNome}</p>
+        <p className="text-sm text-gray-600 mb-4 truncate">{orderName}</p>
 
-        {todasPessoas.length === 0 ? (
+        {allPeople.length === 0 ? (
           <p className="text-sm text-gray-400 py-6 text-center">
             Adicione pessoas à mesa primeiro.
           </p>
         ) : (
           <ul className="flex flex-col gap-2 overflow-y-auto min-h-0" role="list">
-            {todasPessoas.map((pessoa) => {
-              const isAssigned = assignedIds.has(pessoa.id);
+            {allPeople.map((person) => {
+              const isAssigned = assignedIds.has(person.id);
               return (
-                <li key={pessoa.id}>
+                <li key={person.id}>
                   <button
                     type="button"
-                    onClick={() => onToggle(pessoa.id)}
+                    onClick={() => onToggle(person.id)}
                     aria-pressed={isAssigned}
                     className={`w-full flex items-center gap-3 p-3 rounded-lg border min-h-11 active:scale-[0.99] transition-colors ${
                       isAssigned
@@ -78,13 +78,13 @@ const AssignPeopleSheet = ({
                   >
                     <span
                       className="inline-flex items-center justify-center size-8 rounded-full text-white text-xs font-semibold shrink-0"
-                      style={{ backgroundColor: pessoa.cor }}
+                      style={{ backgroundColor: person.color }}
                       aria-hidden="true"
                     >
-                      {getInitials(pessoa.nome)}
+                      {getInitials(person.name)}
                     </span>
                     <span className="flex-1 text-left text-sm font-medium text-gray-900">
-                      {pessoa.nome}
+                      {person.name}
                     </span>
                     {isAssigned ? (
                       <svg
@@ -126,22 +126,22 @@ const AssignPeopleSheet = ({
 };
 
 export const OrderDivisionCard = ({
-  pedido,
-  pessoasAtribuidas,
-  todasPessoas,
+  order,
+  assignedPeople,
+  allPeople,
   onAddPerson,
   onRemovePerson,
 }: OrderDivisionCardProps) => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const subtotal = pedido.quantidade * pedido.valorUnitario;
-  const hasPeople = pessoasAtribuidas.length > 0;
-  const assignedIds = new Set(pessoasAtribuidas.map((p) => p.id));
+  const subtotal = order.quantity * order.unitPrice;
+  const hasPeople = assignedPeople.length > 0;
+  const assignedIds = new Set(assignedPeople.map((p) => p.id));
 
-  const handleToggle = (pessoaId: string) => {
-    if (assignedIds.has(pessoaId)) {
-      onRemovePerson(pessoaId);
+  const handleToggle = (personId: string) => {
+    if (assignedIds.has(personId)) {
+      onRemovePerson(personId);
     } else {
-      onAddPerson(pessoaId);
+      onAddPerson(personId);
     }
   };
 
@@ -155,10 +155,10 @@ export const OrderDivisionCard = ({
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium text-gray-900">
-              <span className="truncate">{pedido.nome}</span>
+              <span className="truncate">{order.name}</span>
               <span className="text-gray-500 font-normal">
                 {' '}
-                ({pedido.quantidade}x) — {formatCurrency(subtotal)}
+                ({order.quantity}x) — {formatCurrency(subtotal)}
               </span>
             </p>
             {!hasPeople ? (
@@ -168,19 +168,19 @@ export const OrderDivisionCard = ({
         </div>
 
         <div className="flex items-center gap-1.5 flex-wrap">
-          {pessoasAtribuidas.map((pessoa) => (
+          {assignedPeople.map((person) => (
             <PersonChip
-              key={pessoa.id}
-              pessoa={pessoa}
+              key={person.id}
+              person={person}
               size="sm"
-              onRemove={() => onRemovePerson(pessoa.id)}
+              onRemove={() => onRemovePerson(person.id)}
             />
           ))}
 
           <button
             type="button"
             onClick={() => setIsSheetOpen(true)}
-            aria-label={`Adicionar pessoas a ${pedido.nome}`}
+            aria-label={`Adicionar pessoas a ${order.name}`}
             className="inline-flex items-center justify-center size-11 rounded-full bg-gray-100 text-gray-500 active:bg-gray-200 shrink-0"
           >
             <svg
@@ -200,8 +200,8 @@ export const OrderDivisionCard = ({
 
       {isSheetOpen ? (
         <AssignPeopleSheet
-          pedidoNome={pedido.nome}
-          todasPessoas={todasPessoas}
+          orderName={order.name}
+          allPeople={allPeople}
           assignedIds={assignedIds}
           onToggle={handleToggle}
           onClose={() => setIsSheetOpen(false)}
