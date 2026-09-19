@@ -1,4 +1,4 @@
-export { formatCurrency } from './format';
+export { formatCurrency, getInitials } from './format';
 
 /**
  * Formata uma data para o padrão brasileiro
