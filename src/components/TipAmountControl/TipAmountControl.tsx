@@ -6,7 +6,7 @@ interface TipAmountControlProps {
   min: number;
   max: number;
   step: number;
-  suffix: '%' | 'R$';
+  suffix: '%' | null;
   label: string;
 }
 
@@ -71,11 +71,6 @@ export const TipAmountControl = ({
       </button>
 
       <div className="flex-1 flex items-center justify-center min-w-0 gap-0.5">
-        {suffix === 'R$' ? (
-          <span className="text-xl font-semibold text-gray-900" aria-hidden="true">
-            R$
-          </span>
-        ) : null}
         <label htmlFor="tip-amount-input" className="sr-only">
           {label}
         </label>

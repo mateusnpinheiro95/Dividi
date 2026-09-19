@@ -152,14 +152,11 @@ export const OrderDivisionCard = ({
           !hasPeople ? 'border-red-300 bg-red-50/40' : ''
         }`}
       >
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-gray-900">
-              <span className="truncate">{order.name}</span>
-              <span className="text-gray-500 font-normal">
-                {' '}
-                ({order.quantity}x) — {formatCurrency(subtotal)}
-              </span>
+        <div className="flex items-start justify-between gap-2 min-w-0">
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <p className="text-sm font-medium text-gray-900 truncate">{order.name}</p>
+            <p className="text-xs text-gray-500 mt-0.5 tabular-nums">
+              {order.quantity}x — {formatCurrency(subtotal)}
             </p>
             {!hasPeople ? (
               <p className="text-xs text-red-600 mt-1">Selecione ao menos 1 pessoa</p>

@@ -7,22 +7,32 @@ interface AddOrderModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (order: Omit<Order, 'id'>) => void;
+  onEdit?: (id: string, updates: Omit<Order, 'id'>) => void;
+  editingOrder?: Order;
 }
 
 interface AddOrderFormProps {
   onClose: () => void;
   onAdd: (order: Omit<Order, 'id'>) => void;
+  onEdit?: (id: string, updates: Omit<Order, 'id'>) => void;
+  editingOrder?: Order;
 }
 
-const AddOrderForm = ({ onClose, onAdd }: AddOrderFormProps) => {
+const formatPriceInput = (value: number): string =>
+  value.toFixed(2).replace('.', ',');
+
+const AddOrderForm = ({ onClose, onAdd, onEdit, editingOrder }: AddOrderFormProps) => {
   const titleId = useId();
   const nameId = useId();
   const priceId = useId();
   const quantityId = useId();
+  const isEditing = Boolean(editingOrder);
 
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [quantity, setQuantity] = useState(1);
+  const [name, setName] = useState(editingOrder?.name ?? '');
+  const [price, setPrice] = useState(
+    editingOrder ? formatPriceInput(editingOrder.unitPrice) : ''
+  );
+  const [quantity, setQuantity] = useState(editingOrder?.quantity ?? 1);
 
   const priceNumber = Number(price.replace(',', '.'));
   const isValid =
@@ -35,18 +45,24 @@ const AddOrderForm = ({ onClose, onAdd }: AddOrderFormProps) => {
     event.preventDefault();
     if (!isValid) return;
 
-    onAdd({
+    const payload = {
       name: name.trim(),
       unitPrice: priceNumber,
       quantity,
-    });
+    };
+
+    if (isEditing && editingOrder && onEdit) {
+      onEdit(editingOrder.id, payload);
+    } else {
+      onAdd(payload);
+    }
     onClose();
   };
 
   return (
     <div className="relative z-10 w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-white p-5 shadow-lg">
       <h2 id={titleId} className="text-lg font-semibold text-gray-900 mb-4">
-        Adicionar item
+        {isEditing ? 'Editar item' : 'Adicionar item'}
       </h2>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -58,9 +74,10 @@ const AddOrderForm = ({ onClose, onAdd }: AddOrderFormProps) => {
             id={nameId}
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => setName(e.target.value.slice(0, 60))}
             placeholder="Ex.: Água sem gás"
             className="input-field"
+            maxLength={60}
             autoFocus
             autoComplete="off"
           />
@@ -68,7 +85,7 @@ const AddOrderForm = ({ onClose, onAdd }: AddOrderFormProps) => {
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor={priceId} className="text-[13px] text-gray-600">
-            Valor unitário (R$)
+            Valor unitário
           </label>
           <input
             id={priceId}
@@ -121,7 +138,7 @@ const AddOrderForm = ({ onClose, onAdd }: AddOrderFormProps) => {
             Cancelar
           </Button>
           <Button type="submit" variant="primary" fullWidth disabled={!isValid}>
-            Adicionar
+            {isEditing ? 'Salvar' : 'Adicionar'}
           </Button>
         </div>
       </form>
@@ -129,7 +146,13 @@ const AddOrderForm = ({ onClose, onAdd }: AddOrderFormProps) => {
   );
 };
 
-export const AddOrderModal = ({ isOpen, onClose, onAdd }: AddOrderModalProps) => {
+export const AddOrderModal = ({
+  isOpen,
+  onClose,
+  onAdd,
+  onEdit,
+  editingOrder,
+}: AddOrderModalProps) => {
   useEffect(() => {
     if (!isOpen) return;
 
@@ -148,7 +171,7 @@ export const AddOrderModal = ({ isOpen, onClose, onAdd }: AddOrderModalProps) =>
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
       role="dialog"
       aria-modal="true"
-      aria-label="Adicionar item"
+      aria-label={editingOrder ? 'Editar item' : 'Adicionar item'}
     >
       <button
         type="button"
@@ -157,7 +180,14 @@ export const AddOrderModal = ({ isOpen, onClose, onAdd }: AddOrderModalProps) =>
         onClick={onClose}
       />
 
-      <AddOrderForm onClose={onClose} onAdd={onAdd} />
+      {/* key remounts form state when switching between add/edit or different orders */}
+      <AddOrderForm
+        key={editingOrder?.id ?? 'new'}
+        onClose={onClose}
+        onAdd={onAdd}
+        onEdit={onEdit}
+        editingOrder={editingOrder}
+      />
     </div>
   );
 };
