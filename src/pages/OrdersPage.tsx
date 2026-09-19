@@ -39,11 +39,15 @@ export const OrdersPage = () => {
     }
   };
 
+  const handleQuantityChange = (id: string, quantity: number) => {
+    updateOrder(id, { quantity });
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 overflow-x-hidden min-w-0">
       <PageHeader title="Comanda" subtitle={DEFAULT_TABLE_LABEL} />
 
-      <div className="flex-1 flex flex-col container-mobile py-5 pb-4">
+      <div className="flex-1 flex flex-col container-mobile py-5 pb-4 min-w-0">
         <section className="flex items-start justify-between gap-3 mb-4">
           <div className="min-w-0">
             <h2 className="text-xl font-semibold text-gray-900 leading-7">Pedidos</h2>
@@ -104,7 +108,7 @@ export const OrdersPage = () => {
           </div>
         </section>
 
-        <section className="flex-1 flex flex-col gap-3 min-h-0 overflow-y-auto" aria-label="Lista de pedidos">
+        <section className="flex-1 flex flex-col gap-3 min-h-0 min-w-0 overflow-x-hidden overflow-y-auto" aria-label="Lista de pedidos">
           {orders.length === 0 ? (
             <div className="flex-1 flex items-center justify-center py-12">
               <p className="text-sm text-gray-400 text-center">
@@ -120,6 +124,7 @@ export const OrdersPage = () => {
                 order={order}
                 onEdit={handleEditOrder}
                 onRemove={removeOrder}
+                onQuantityChange={handleQuantityChange}
               />
             ))
           )}

@@ -8,23 +8,23 @@
   }
 
   html {
-    @apply h-full;
+    @apply h-full overflow-x-hidden;
     -webkit-tap-highlight-color: transparent;
   }
 
   body {
-    @apply h-full m-0 bg-gray-50 text-gray-900 antialiased font-sans;
+    @apply h-full m-0 overflow-x-hidden bg-gray-50 text-gray-900 antialiased font-sans;
   }
 
   #root {
-    @apply h-full;
+    @apply h-full min-w-0 overflow-x-hidden;
   }
 }
 
 /* Componentes customizados */
 @layer components {
   .container-mobile {
-    @apply max-w-md mx-auto px-4;
+    @apply w-full max-w-md min-w-0 mx-auto px-4;
   }
 
   .btn-primary {
@@ -42,21 +42,16 @@
   }
 
   .card {
-    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4;
-  }
-
-  .quantity-badge {
-    @apply inline-flex items-center justify-center min-w-8 h-6 px-2
-           bg-primary-100 text-primary-600 rounded text-sm font-medium shrink-0;
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4 min-w-0;
   }
 
   .order-item-card {
-    @apply flex items-center gap-3 p-4 bg-white border border-gray-200
-           rounded-lg shadow-sm;
+    @apply flex flex-col p-3 w-full min-w-0 overflow-hidden
+           bg-white border border-gray-200 rounded-lg shadow-sm;
   }
 
   .total-card {
-    @apply p-4 bg-gray-100 rounded-lg flex justify-between items-center;
+    @apply p-4 bg-gray-100 rounded-lg flex justify-between items-center min-w-0;
   }
 
   .input-field {

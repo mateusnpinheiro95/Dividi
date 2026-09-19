@@ -50,14 +50,14 @@ export const SummaryPage = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 overflow-x-hidden min-w-0">
       <PageHeader
         title="Resumo"
         subtitle={DEFAULT_TABLE_LABEL}
         onBack={() => navigate(ROUTES.TIP)}
       />
 
-      <div className="flex-1 flex flex-col container-mobile py-5 pb-4 min-h-0">
+      <div className="flex-1 flex flex-col container-mobile py-5 pb-4 min-h-0 min-w-0">
         {!hasData ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-4 py-12">
             <p className="text-sm text-gray-400 text-center">

@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import type { ChangeEvent } from 'react';
 import { Button } from '../Button';
+import { ImageCropper } from '../ImageCropper';
 import { extractTextFromImage } from '@/services/ocrService';
 import { parseReceiptText } from '@/utils/parseReceiptText';
 import type { Order } from '@/types';
@@ -12,6 +13,7 @@ interface OcrCaptureModalProps {
 }
 
 type OcrStatus = 'idle' | 'processing' | 'error';
+type ViewMode = 'select' | 'crop' | 'processing';
 
 interface OcrCaptureFormProps {
   onClose: () => void;
@@ -26,6 +28,7 @@ const OcrCaptureForm = ({ onClose, onOrdersExtracted }: OcrCaptureFormProps) => 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const previewUrlRef = useRef<string | null>(null);
 
+  const [viewMode, setViewMode] = useState<ViewMode>('select');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [status, setStatus] = useState<OcrStatus>('idle');
@@ -61,17 +64,37 @@ const OcrCaptureForm = ({ onClose, onOrdersExtracted }: OcrCaptureFormProps) => 
     setPreviewUrl(nextUrl);
     setStatus('idle');
     setErrorMessage(null);
+    setViewMode('crop'); // Go to crop mode after selecting image
   };
 
-  const handleProcess = async () => {
-    if (!selectedFile || status === 'processing') return;
+  const handleCropComplete = (croppedFile: File) => {
+    // Replace selected file with cropped version
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+    }
 
+    const nextUrl = URL.createObjectURL(croppedFile);
+    previewUrlRef.current = nextUrl;
+    setSelectedFile(croppedFile);
+    setPreviewUrl(nextUrl);
+    setViewMode('processing');
+    
+    // Start OCR processing automatically after crop
+    void processImage(croppedFile);
+  };
+
+  const handleCropCancel = () => {
+    setViewMode('select');
+    // Keep the original file and preview
+  };
+
+  const processImage = async (fileToProcess: File) => {
     setStatus('processing');
     setErrorMessage(null);
     setProgress(0);
 
     try {
-      const text = await extractTextFromImage(selectedFile, setProgress);
+      const text = await extractTextFromImage(fileToProcess, setProgress);
       const orders = parseReceiptText(text);
 
       if (orders.length === 0) {
@@ -79,6 +102,7 @@ const OcrCaptureForm = ({ onClose, onOrdersExtracted }: OcrCaptureFormProps) => 
         setErrorMessage(
           'Nenhum item detectado. Tente outra foto ou adicione manualmente.'
         );
+        setViewMode('select');
         return;
       }
 
@@ -87,10 +111,28 @@ const OcrCaptureForm = ({ onClose, onOrdersExtracted }: OcrCaptureFormProps) => 
     } catch {
       setStatus('error');
       setErrorMessage('Não foi possível ler a imagem. Tente novamente.');
+      setViewMode('select');
     }
   };
 
+  const handleSkipCrop = () => {
+    if (!selectedFile) return;
+    setViewMode('processing');
+    void processImage(selectedFile);
+  };
+
   const isProcessing = status === 'processing';
+
+  // Show cropper when in crop mode
+  if (viewMode === 'crop' && previewUrl) {
+    return (
+      <ImageCropper
+        imageUrl={previewUrl}
+        onCropComplete={handleCropComplete}
+        onCancel={handleCropCancel}
+      />
+    );
+  }
 
   return (
     <div className="relative z-10 w-full max-w-md rounded-t-2xl sm:rounded-2xl bg-white p-5 shadow-lg">
@@ -179,7 +221,7 @@ const OcrCaptureForm = ({ onClose, onOrdersExtracted }: OcrCaptureFormProps) => 
         </Button>
       </div>
 
-      {previewUrl ? (
+      {previewUrl && viewMode === 'select' ? (
         <div className="mb-4 rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
           <img
             src={previewUrl}
@@ -187,11 +229,11 @@ const OcrCaptureForm = ({ onClose, onOrdersExtracted }: OcrCaptureFormProps) => 
             className="w-full max-h-48 object-contain"
           />
         </div>
-      ) : (
+      ) : viewMode === 'select' ? (
         <div className="mb-4 rounded-lg border border-dashed border-gray-300 bg-gray-50 py-8 px-4 text-center">
           <p className="text-sm text-gray-400">Nenhuma imagem selecionada</p>
         </div>
-      )}
+      ) : null}
 
       {isProcessing && (
         <div
@@ -234,14 +276,24 @@ const OcrCaptureForm = ({ onClose, onOrdersExtracted }: OcrCaptureFormProps) => 
         >
           Cancelar
         </Button>
+        {viewMode === 'select' && selectedFile && !isProcessing && (
+          <Button
+            type="button"
+            variant="secondary"
+            fullWidth
+            onClick={handleSkipCrop}
+          >
+            Ler sem ajustar
+          </Button>
+        )}
         <Button
           type="button"
           variant="primary"
           fullWidth
-          onClick={() => void handleProcess()}
-          disabled={!selectedFile || isProcessing}
+          onClick={() => setViewMode('crop')}
+          disabled={!selectedFile || isProcessing || viewMode !== 'select'}
         >
-          {isProcessing ? 'Lendo…' : 'Ler cupom'}
+          {isProcessing ? 'Lendo…' : 'Ajustar e ler'}
         </Button>
       </div>
     </div>

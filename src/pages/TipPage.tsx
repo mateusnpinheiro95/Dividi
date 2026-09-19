@@ -41,14 +41,14 @@ export const TipPage = () => {
   const hasPeople = people.length > 0;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 overflow-x-hidden min-w-0">
       <PageHeader
         title="Gorjeta"
         subtitle={DEFAULT_TABLE_LABEL}
         onBack={() => navigate(ROUTES.PEOPLE)}
       />
 
-      <div className="flex-1 flex flex-col container-mobile py-5 pb-4 min-h-0">
+      <div className="flex-1 flex flex-col container-mobile py-5 pb-4 min-h-0 min-w-0">
         <section className="mb-6" aria-label="Tipo de gorjeta">
           <div className="mb-4">
             <h2 className="text-xl font-semibold text-gray-900 leading-7">
@@ -75,7 +75,7 @@ export const TipPage = () => {
             min={isPercentage ? MIN_TIP_PERCENTAGE : MIN_TIP_FIXED}
             max={isPercentage ? MAX_TIP_PERCENTAGE : MAX_TIP_FIXED}
             step={isPercentage ? TIP_PERCENTAGE_STEP : TIP_FIXED_STEP}
-            suffix={isPercentage ? '%' : 'R$'}
+            suffix={isPercentage ? '%' : null}
             label={isPercentage ? 'Percentual da gorjeta' : 'Valor da gorjeta'}
           />
         </section>

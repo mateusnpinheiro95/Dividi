@@ -2,12 +2,13 @@ import type { Order } from '@/types';
 
 type ParsedOrder = Omit<Order, 'id'>;
 
+// Skip common receipt headers/footers (case-insensitive)
 const SKIP_LINE_PATTERN =
-  /^(total|subtotal|sub[\s-]?total|desconto|troco|pagamento|forma\s+de\s+pagamento|cart[aã]o|dinheiro|pix|cpf|cnpj|nfce|nfc-e|cupom|comanda|mesa|gar[cç]om|gorjeta|servi[cç]o|taxa|vlr\.?\s*total|valor\s+total|qtd|item|descricao|descri[cç][aã]o)/i;
+  /^(total|subtotal|sub[\s-]?total|desconto|troco|pagamento|forma\s+de\s+pagamento|cart[aã]o|dinheiro|pix|cpf|cnpj|nfce|nfc-e|cupom|comanda|mesa|gar[cç]om|gorjeta|servi[cç]o|taxa|vlr\.?\s*total|valor\s+total|qtd|quant|item|descricao|descri[cç][aã]o|vl\.?\s*unit|atendente|documento|precuenta|items?|fecha|hora|caba|bs\s*as)/i;
 
 /**
- * Parses a Brazilian currency string into a number.
- * Handles "10,00", "10.00", "1.234,56", "1,234.56".
+ * Parses a price string into a number.
+ * Handles multiple formats: "10,00", "10.00", "1.234,56", "1000", "38100.00"
  */
 function parsePrice(raw: string): number | null {
   const cleaned = raw.trim().replace(/[^\d.,]/g, '');
@@ -19,32 +20,51 @@ function parsePrice(raw: string): number | null {
   let normalized = cleaned;
 
   if (hasComma && hasDot) {
-    // Assume the last separator is the decimal one
+    // Determine which is the decimal separator by position
     if (cleaned.lastIndexOf(',') > cleaned.lastIndexOf('.')) {
-      // 1.234,56
+      // Format: 1.234,56 (Brazilian)
       normalized = cleaned.replace(/\./g, '').replace(',', '.');
     } else {
-      // 1,234.56
+      // Format: 1,234.56 (US/Argentina)
       normalized = cleaned.replace(/,/g, '');
     }
   } else if (hasComma) {
-    normalized = cleaned.replace(',', '.');
+    // Only comma - could be "10,00" or "1000,00"
+    // If comma is in last 3 positions, treat as decimal
+    const commaPos = cleaned.lastIndexOf(',');
+    if (cleaned.length - commaPos <= 3) {
+      normalized = cleaned.replace(',', '.');
+    } else {
+      normalized = cleaned.replace(/,/g, '');
+    }
   }
+  // If only dots or no separator, keep as-is (could be "1000" or "10.00")
 
   const value = Number(normalized);
   if (!Number.isFinite(value) || value <= 0) return null;
   return value;
 }
 
+const MAX_NAME_LENGTH = 60;
+
 /**
- * Title-cases a product name while keeping short words lowercase when appropriate.
+ * Title-cases a product name and keeps it layout-safe.
  */
 function normalizeName(raw: string): string {
-  return raw
+  const cleaned = raw
     .trim()
     .replace(/\s+/g, ' ')
+    // Strip OCR noise: trailing dashes/dots and menu codes like (w)
+    .replace(/\s*[.\-_·•—–|]+$/g, '')
+    .replace(/\s*\([^)]{0,4}\)\s*$/g, '')
+    .trim();
+
+  const titled = cleaned
     .toLowerCase()
     .replace(/(^|\s)\S/g, (char) => char.toUpperCase());
+
+  if (titled.length <= MAX_NAME_LENGTH) return titled;
+  return `${titled.slice(0, MAX_NAME_LENGTH - 1).trimEnd()}…`;
 }
 
 function shouldSkipLine(line: string): boolean {
@@ -52,13 +72,21 @@ function shouldSkipLine(line: string): boolean {
 }
 
 /**
- * Extracts order items from OCR text of a Brazilian restaurant receipt.
- *
- * Supported patterns (examples):
- * - "2x AGUA SEM GAS R$ 10,00"
- * - "1 UN REFRIGERANTE 8,50"
- * - "Água sem gás ............ 10,00" (qty defaults to 1)
- * - "2  Cerveja  12,90"
+ * Count slashes or pipes at the start of a line (some receipts use /// for quantity).
+ */
+function countLeadingMarkers(line: string): number {
+  const match = line.match(/^([\/|]+)/);
+  return match ? match[1].length : 0;
+}
+
+/**
+ * Extracts order items from OCR text in a generic way.
+ * 
+ * Supports multiple receipt formats:
+ * 1. "2x AGUA SEM GAS R$ 10,00"
+ * 2. "/// Self-Service 18,00 54,00" (slashes = quantity)
+ * 3. "2x PLATO FIEL(w) 6800 13800" (qty x name price_unit price_total)
+ * 4. "Água sem gás 10,00" (implicit qty = 1)
  */
 export function parseReceiptText(text: string): ParsedOrder[] {
   const lines = text
@@ -69,52 +97,114 @@ export function parseReceiptText(text: string): ParsedOrder[] {
   const orders: ParsedOrder[] = [];
   const seen = new Set<string>();
 
-  // Pattern A: qty + optional x/un + name + optional R$ + price
-  // e.g. "2x AGUA SEM GAS R$ 10,00" | "1 UN REFRIGERANTE 8.50" | "2 Cerveja 12,90"
-  const patternWithQty =
-    /^(\d{1,3})\s*(?:[xX×]|un(?:id(?:ade)?)?\.?)?\s+(.+?)\s+(?:R\$\s*)?([\d]+(?:[.,]\d{1,2})?)\s*$/i;
-
-  // Pattern B: name + optional R$ + price (quantity defaults to 1)
-  // e.g. "Água sem gás R$ 10,00" | "Refrigerante ........ 8,50"
-  const patternNamePrice =
-    /^(.+?)\s+(?:R\$\s*)?([\d]+(?:[.,]\d{1,2})?)\s*$/i;
-
   for (const line of lines) {
     if (shouldSkipLine(line)) continue;
 
     let quantity = 1;
     let name = '';
-    let priceRaw = '';
+    let unitPrice: number | null = null;
 
-    const matchQty = line.match(patternWithQty);
-    if (matchQty) {
-      quantity = Number(matchQty[1]);
-      name = matchQty[2];
-      priceRaw = matchQty[3];
+    // Check for leading markers (slashes/pipes indicating quantity)
+    const markerCount = countLeadingMarkers(line);
+    if (markerCount > 0) {
+      quantity = markerCount;
+      const withoutMarkers = line.replace(/^[\/|]+\s*/, '');
+      
+      // Extract name and numbers from remaining text
+      // Pattern: "name number1 number2" or "name number"
+      const parts = withoutMarkers.split(/\s+/);
+      const numbers: number[] = [];
+      const nameParts: string[] = [];
+
+      for (const part of parts) {
+        const price = parsePrice(part);
+        if (price !== null) {
+          numbers.push(price);
+        } else {
+          nameParts.push(part);
+        }
+      }
+
+      name = nameParts.join(' ');
+      
+      // If we have multiple numbers, prefer the first as unit price
+      if (numbers.length > 0) {
+        unitPrice = numbers[0];
+      }
     } else {
-      const matchName = line.match(patternNamePrice);
-      if (!matchName) continue;
-      name = matchName[1];
-      priceRaw = matchName[2];
+      // Standard patterns without markers
+      
+      // Pattern 1: "2x NAME 6800 13800" or "2 x NAME 6800 13800"
+      // Extract qty at start, then name, then numbers
+      const qtyMatch = line.match(/^(\d{1,3})\s*[xX×]?\s+(.+)$/);
+      
+      if (qtyMatch) {
+        quantity = Number(qtyMatch[1]);
+        const remainder = qtyMatch[2];
+        
+        // Split remainder into name parts and numbers
+        const parts = remainder.split(/\s+/);
+        const numbers: number[] = [];
+        const nameParts: string[] = [];
+
+        for (const part of parts) {
+          const price = parsePrice(part);
+          if (price !== null) {
+            numbers.push(price);
+          } else {
+            nameParts.push(part);
+          }
+        }
+
+        name = nameParts.join(' ');
+        
+        // If multiple numbers, first is usually unit price
+        if (numbers.length > 0) {
+          unitPrice = numbers[0];
+        }
+      } else {
+        // Pattern 2: "NAME price1 price2" or "NAME price"
+        // No explicit quantity - find name and extract prices
+        const parts = line.split(/\s+/);
+        const numbers: number[] = [];
+        const nameParts: string[] = [];
+
+        for (const part of parts) {
+          const price = parsePrice(part);
+          if (price !== null) {
+            numbers.push(price);
+          } else {
+            nameParts.push(part);
+          }
+        }
+
+        name = nameParts.join(' ');
+        
+        // If we have numbers, use the first one
+        // (if qty=1 and two numbers present, they should be equal)
+        if (numbers.length > 0) {
+          unitPrice = numbers[0];
+        }
+      }
     }
 
-    // Clean name: remove trailing dots/dashes used as separators on receipts
-    name = name.replace(/[\s.\-_·•]+$/g, '').replace(/^[\s.\-_·•]+/g, '').trim();
+    // Clean and validate name
+    name = name
+      .replace(/[\s.\-_·•—–|]+$/g, '')
+      .replace(/^[\s.\-_·•—–|]+/g, '')
+      .trim();
     if (name.length < 2) continue;
-    if (/^\d+$/.test(name)) continue;
+    if (/^\d+$/.test(name)) continue; // Skip pure numbers
     if (shouldSkipLine(name)) continue;
 
-    // Avoid matching lines that are mostly numbers (codes, CNPJ fragments)
+    // Must have at least 2 letters to be a valid product
     const letterCount = (name.match(/[a-zA-ZÀ-ÿ]/g) ?? []).length;
     if (letterCount < 2) continue;
 
-    const unitPrice = parsePrice(priceRaw);
-    if (unitPrice === null) continue;
+    // Must have a valid price
+    if (unitPrice === null || !Number.isFinite(unitPrice)) continue;
     if (!Number.isFinite(quantity) || quantity < 1) continue;
 
-    // If the price looks like a line total (qty * unit), convert to unit price
-    // Heuristic: when qty > 1 and OCR shows a large total, we keep as unitPrice
-    // and trust the printed value as unit price (most Brazilian receipts print unit).
     const normalizedName = normalizeName(name);
     const key = `${normalizedName}|${quantity}|${unitPrice.toFixed(2)}`;
     if (seen.has(key)) continue;

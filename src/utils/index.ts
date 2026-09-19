@@ -1,4 +1,4 @@
-export { formatCurrency, getInitials } from './format';
+export { formatCurrency, getInitials, sanitizeOrderName } from './format';
 export { migrateLegacyStorage } from './migrateStorage';
 export { buildSummaryText, shareSummary } from './shareSummary';
 export { resetCalculation } from './resetCalculation';

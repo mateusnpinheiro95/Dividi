@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { STORAGE_KEYS } from '@/constants';
+import { sanitizeOrderName } from '@/utils';
 import type { Order } from '@/types';
 
 interface UseOrdersReturn {
@@ -11,13 +12,26 @@ interface UseOrdersReturn {
   getTotal: () => number;
 }
 
+function normalizeOrder(order: Order): Order {
+  return {
+    ...order,
+    name: sanitizeOrderName(order.name),
+  };
+}
+
 export function useOrders(): UseOrdersReturn {
-  const [orders, setOrders] = useLocalStorage<Order[]>(STORAGE_KEYS.ORDERS, []);
+  const [storedOrders, setOrders] = useLocalStorage<Order[]>(STORAGE_KEYS.ORDERS, []);
+
+  const orders = useMemo(
+    () => storedOrders.map(normalizeOrder),
+    [storedOrders]
+  );
 
   const addOrder = useCallback(
     (order: Omit<Order, 'id'>) => {
       const newOrder: Order = {
         ...order,
+        name: sanitizeOrderName(order.name),
         id: crypto.randomUUID(),
       };
       setOrders((prev) => [...prev, newOrder]);
@@ -28,7 +42,14 @@ export function useOrders(): UseOrdersReturn {
   const updateOrder = useCallback(
     (id: string, updates: Partial<Omit<Order, 'id'>>) => {
       setOrders((prev) =>
-        prev.map((order) => (order.id === id ? { ...order, ...updates } : order))
+        prev.map((order) => {
+          if (order.id !== id) return order;
+          const next = { ...order, ...updates };
+          if (updates.name !== undefined) {
+            next.name = sanitizeOrderName(updates.name);
+          }
+          return next;
+        })
       );
     },
     [setOrders]

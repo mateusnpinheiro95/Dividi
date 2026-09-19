@@ -35,14 +35,14 @@ export const PeoplePage = () => {
   ).length;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50 overflow-x-hidden min-w-0">
       <PageHeader
         title="Pessoas"
         subtitle={DEFAULT_TABLE_LABEL}
         onBack={() => navigate(ROUTES.HOME)}
       />
 
-      <div className="flex-1 flex flex-col container-mobile py-5 pb-4 min-h-0">
+      <div className="flex-1 flex flex-col container-mobile py-5 pb-4 min-h-0 min-w-0">
         <section className="mb-6" aria-label="Pessoas da mesa">
           <div className="flex items-start justify-between gap-3 mb-4">
             <div>

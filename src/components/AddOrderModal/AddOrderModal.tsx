@@ -74,9 +74,10 @@ const AddOrderForm = ({ onClose, onAdd, onEdit, editingOrder }: AddOrderFormProp
             id={nameId}
             type="text"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => setName(e.target.value.slice(0, 60))}
             placeholder="Ex.: Água sem gás"
             className="input-field"
+            maxLength={60}
             autoFocus
             autoComplete="off"
           />
@@ -84,7 +85,7 @@ const AddOrderForm = ({ onClose, onAdd, onEdit, editingOrder }: AddOrderFormProp
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor={priceId} className="text-[13px] text-gray-600">
-            Valor unitário (R$)
+            Valor unitário
           </label>
           <input
             id={priceId}
