@@ -1,0 +1,37 @@
+---
+description: Restrições e contexto do produto Dividi (mobile, offline, sem APIs)
+alwaysApply: true
+---
+
+# Dividi — produto
+
+App web **mobile-first**, 100% client-side. Não há backend.
+
+## Restrições
+
+- **Nunca** integrar APIs, backends, SDKs de cloud ou serviços externos (auth, analytics, pagamentos, etc.)
+- Persistência apenas no browser (`localStorage`, `sessionStorage`, IndexedDB se necessário)
+- UX pensada para celular: touch, viewport estreito, feedback `active:`
+- Stack: React + TypeScript + Vite + Tailwind CSS v4 + React Router
+- Imports com alias `@/` (ex.: `@/components`)
+- Seguir melhores práticas do Lighthouse: **mínimo 90** em Performance, Acessibilidade, Boas práticas e SEO
+- **Não** há (nem criar) testes de unidade, unitários, de componentes ou suites equivalentes — não adicionar Vitest, Jest, Testing Library, etc. sem pedido explícito
+
+## Estrutura
+
+```
+src/components/  # UI reutilizável (pasta + index.ts)
+src/pages/       # Telas
+src/hooks/       # Custom hooks
+src/contexts/    # Estado global (quando precisar)
+src/layouts/     # Shells de página
+src/utils/       # Funções puras
+src/types/       # Tipos
+src/constants/   # Constantes / rotas
+src/assets/      # Mídia estática
+```
+
+## Ao sugerir mudanças
+
+- Preferir evoluir a estrutura existente a inventar pastas novas
+- Não adicionar dependências de rede sem pedido explícito do usuário

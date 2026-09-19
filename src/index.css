@@ -1,0 +1,67 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+/* Estilos base para mobile-first */
+@layer base {
+  * {
+    @apply touch-manipulation;
+  }
+
+  html {
+    @apply h-full;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply h-full m-0 bg-gray-50 text-gray-900 antialiased font-sans;
+  }
+
+  #root {
+    @apply h-full;
+  }
+}
+
+/* Componentes customizados */
+@layer components {
+  .container-mobile {
+    @apply max-w-md mx-auto px-4;
+  }
+
+  .btn-primary {
+    @apply bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold text-[15px] leading-5
+           active:bg-primary-700 transition-colors duration-200
+           disabled:bg-gray-300 disabled:cursor-not-allowed
+           inline-flex items-center justify-center gap-2 min-h-11;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-primary-600 border border-primary-600 px-4 py-2 rounded-lg font-semibold text-[15px] leading-5
+           active:bg-primary-50 transition-colors duration-200
+           disabled:bg-gray-100 disabled:text-gray-400 disabled:border-gray-300 disabled:cursor-not-allowed
+           inline-flex items-center justify-center gap-1.5 min-h-11;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-sm border border-gray-200 p-4;
+  }
+
+  .quantity-badge {
+    @apply inline-flex items-center justify-center min-w-8 h-6 px-2
+           bg-primary-100 text-primary-600 rounded text-sm font-medium shrink-0;
+  }
+
+  .order-item-card {
+    @apply flex items-center gap-3 p-4 bg-white border border-gray-200
+           rounded-lg shadow-sm;
+  }
+
+  .total-card {
+    @apply p-4 bg-gray-100 rounded-lg flex justify-between items-center;
+  }
+
+  .input-field {
+    @apply w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-base text-gray-900
+           placeholder:text-gray-400
+           focus:outline-none focus:border-primary-600 focus:ring-1 focus:ring-primary-600;
+  }
+}

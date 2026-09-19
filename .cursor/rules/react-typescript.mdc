@@ -1,0 +1,45 @@
+---
+description: Padrões React e TypeScript do Dividi
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# React / TypeScript
+
+## Componentes
+
+- Funcionais com TypeScript; props tipadas em `interface`
+- Um componente por pasta: `Button/Button.tsx` + `Button/index.ts`
+- Exportar pelo barrel `src/components/index.ts`
+- Estilizar com Tailwind; classes compostas em `@layer components` no CSS global quando forem reutilizadas
+
+```tsx
+// ✅
+import { Button } from '@/components';
+
+// ❌
+import { Button } from '../../components/Button/Button';
+```
+
+## Hooks e estado
+
+- Lógica reutilizável → custom hook em `src/hooks/`
+- Dados persistentes locais → padrão de `useLocalStorage` (ou similar)
+- Estado global só com Context quando várias árvores precisarem compartilhar
+
+## Páginas e rotas
+
+- Telas em `src/pages/`; rotas em `src/router.tsx` usando `ROUTES` de `@/constants`
+- Envolver páginas com layout (`MainLayout`), não duplicar header/footer
+
+## TypeScript
+
+- Preferir `interface` para props de componentes
+- Evitar `any`; tipar retornos de hooks e utils
+- Funções utilitárias puras em `src/utils/`, tipadas e exportadas pelo barrel
+
+## Não fazer
+
+- `fetch` / axios / clientes HTTP para serviços externos
+- Componentes monolíticos; extrair UI e lógica
+- Classes CSS soltas fora do padrão Tailwind / `@layer`
