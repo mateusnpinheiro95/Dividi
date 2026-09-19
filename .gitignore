@@ -26,6 +26,8 @@ lerna-debug.log*
 # Editor / OS
 .vscode/*
 !.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
 .idea/
 .DS_Store
 Thumbs.db
