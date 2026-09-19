@@ -1,6 +1,6 @@
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { MainLayout } from '@/layouts';
-import { OrdersPage } from '@/pages';
+import { OrdersPage, PeoplePage } from '@/pages';
 import { ROUTES } from '@/constants';
 
 /**
@@ -18,6 +18,14 @@ const router = createBrowserRouter([
   {
     path: ROUTES.ORDERS,
     element: <Navigate to={ROUTES.HOME} replace />,
+  },
+  {
+    path: ROUTES.PEOPLE,
+    element: (
+      <MainLayout>
+        <PeoplePage />
+      </MainLayout>
+    ),
   },
 ]);
 

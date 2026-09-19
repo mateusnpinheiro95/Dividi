@@ -11,3 +11,14 @@ export interface Mesa {
   id: string;
   pedidos: Pedido[];
 }
+
+export interface Pessoa {
+  id: string;
+  nome: string;
+  cor: string;
+}
+
+export interface DivisaoPedido {
+  pedidoId: string;
+  pessoaIds: string[];
+}

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   AddOrderModal,
   BottomNavigation,
@@ -6,11 +7,12 @@ import {
   OrderItem,
   PageHeader,
 } from '@/components';
-import { DEFAULT_MESA_ID } from '@/constants';
+import { DEFAULT_MESA_ID, ROUTES } from '@/constants';
 import { useOrders } from '@/hooks';
 import { formatCurrency } from '@/utils';
 
 export const OrdersPage = () => {
+  const navigate = useNavigate();
   const { pedidos, addPedido, removePedido, calcularTotal } = useOrders();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -78,9 +80,7 @@ export const OrdersPage = () => {
             variant="primary"
             fullWidth
             disabled={!canProceed}
-            onClick={() => {
-              // Próxima etapa (Pessoas) será implementada depois
-            }}
+            onClick={() => navigate(ROUTES.PEOPLE)}
           >
             Próximo
             <svg

@@ -1,6 +1,7 @@
 interface PageHeaderProps {
   title: string;
   subtitle?: string;
+  onBack?: () => void;
   onMenuClick?: () => void;
   onOptionsClick?: () => void;
 }
@@ -8,34 +9,65 @@ interface PageHeaderProps {
 export const PageHeader = ({
   title,
   subtitle,
+  onBack,
   onMenuClick,
   onOptionsClick,
 }: PageHeaderProps) => {
+  const showBack = typeof onBack === 'function';
+  const showMenu = !showBack && typeof onMenuClick === 'function';
+
   return (
     <header className="sticky top-0 z-20 bg-white border-b border-gray-100">
       <div className="container-mobile flex items-center justify-between py-3">
-        <button
-          type="button"
-          onClick={onMenuClick}
-          aria-label="Abrir menu"
-          className="flex items-center justify-center size-11 -ml-2 text-gray-900 rounded-lg active:bg-gray-100"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="size-6"
-            aria-hidden="true"
+        {showBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            aria-label="Voltar"
+            className="flex items-center justify-center size-11 -ml-2 text-gray-900 rounded-lg active:bg-gray-100"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-            />
-          </svg>
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="size-6"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"
+              />
+            </svg>
+          </button>
+        ) : showMenu ? (
+          <button
+            type="button"
+            onClick={onMenuClick}
+            aria-label="Abrir menu"
+            className="flex items-center justify-center size-11 -ml-2 text-gray-900 rounded-lg active:bg-gray-100"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="size-6"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+              />
+            </svg>
+          </button>
+        ) : (
+          <span className="size-11 -ml-2" aria-hidden="true" />
+        )}
 
         <div className="flex flex-col items-center text-center">
           <h1 className="text-xl font-semibold leading-7 text-gray-900">{title}</h1>
