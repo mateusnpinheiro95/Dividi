@@ -1,0 +1,1 @@
+export { TipTypeSelector } from './TipTypeSelector';

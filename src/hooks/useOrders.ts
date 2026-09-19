@@ -1,47 +1,47 @@
 import { useCallback, useMemo } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { STORAGE_KEYS } from '@/constants';
-import type { Pedido } from '@/types';
+import type { Order } from '@/types';
 
 interface UseOrdersReturn {
-  pedidos: Pedido[];
-  addPedido: (pedido: Omit<Pedido, 'id'>) => void;
-  removePedido: (id: string) => void;
-  calcularTotal: () => number;
+  orders: Order[];
+  addOrder: (order: Omit<Order, 'id'>) => void;
+  removeOrder: (id: string) => void;
+  getTotal: () => number;
 }
 
 export function useOrders(): UseOrdersReturn {
-  const [pedidos, setPedidos] = useLocalStorage<Pedido[]>(STORAGE_KEYS.PEDIDOS, []);
+  const [orders, setOrders] = useLocalStorage<Order[]>(STORAGE_KEYS.ORDERS, []);
 
-  const addPedido = useCallback(
-    (pedido: Omit<Pedido, 'id'>) => {
-      const novoPedido: Pedido = {
-        ...pedido,
+  const addOrder = useCallback(
+    (order: Omit<Order, 'id'>) => {
+      const newOrder: Order = {
+        ...order,
         id: crypto.randomUUID(),
       };
-      setPedidos((prev) => [...prev, novoPedido]);
+      setOrders((prev) => [...prev, newOrder]);
     },
-    [setPedidos]
+    [setOrders]
   );
 
-  const removePedido = useCallback(
+  const removeOrder = useCallback(
     (id: string) => {
-      setPedidos((prev) => prev.filter((pedido) => pedido.id !== id));
+      setOrders((prev) => prev.filter((order) => order.id !== id));
     },
-    [setPedidos]
+    [setOrders]
   );
 
   const total = useMemo(
-    () => pedidos.reduce((acc, pedido) => acc + pedido.quantidade * pedido.valorUnitario, 0),
-    [pedidos]
+    () => orders.reduce((acc, order) => acc + order.quantity * order.unitPrice, 0),
+    [orders]
   );
 
-  const calcularTotal = useCallback(() => total, [total]);
+  const getTotal = useCallback(() => total, [total]);
 
   return {
-    pedidos,
-    addPedido,
-    removePedido,
-    calcularTotal,
+    orders,
+    addOrder,
+    removeOrder,
+    getTotal,
   };
 }

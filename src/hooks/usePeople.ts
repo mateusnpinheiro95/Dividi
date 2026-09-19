@@ -1,143 +1,146 @@
 import { useCallback } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { PERSON_COLORS, STORAGE_KEYS } from '@/constants';
-import type { DivisaoPedido, Pedido, Pessoa } from '@/types';
+import type { Order, OrderAssignment, Person } from '@/types';
 
 interface UsePeopleReturn {
-  pessoas: Pessoa[];
-  divisao: DivisaoPedido[];
-  addPessoa: (nome: string) => void;
-  removePessoa: (id: string) => void;
-  atribuirPessoaAoPedido: (pedidoId: string, pessoaId: string) => void;
-  removerPessoaDoPedido: (pedidoId: string, pessoaId: string) => void;
-  getPessoasDoPedido: (pedidoId: string) => Pessoa[];
-  todosOsPedidosTemPessoas: (pedidos: Pedido[]) => boolean;
+  people: Person[];
+  assignments: OrderAssignment[];
+  addPerson: (name: string) => void;
+  removePerson: (id: string) => void;
+  assignPersonToOrder: (orderId: string, personId: string) => void;
+  removePersonFromOrder: (orderId: string, personId: string) => void;
+  getPeopleForOrder: (orderId: string) => Person[];
+  allOrdersHavePeople: (orders: Order[]) => boolean;
   getNextColor: () => string;
 }
 
-function pickNextColor(pessoas: Pessoa[]): string {
+function pickNextColor(people: Person[]): string {
   const usedCounts = new Map<string, number>();
-  for (const cor of PERSON_COLORS) {
-    usedCounts.set(cor, 0);
+  for (const color of PERSON_COLORS) {
+    usedCounts.set(color, 0);
   }
-  for (const pessoa of pessoas) {
-    usedCounts.set(pessoa.cor, (usedCounts.get(pessoa.cor) ?? 0) + 1);
+  for (const person of people) {
+    usedCounts.set(person.color, (usedCounts.get(person.color) ?? 0) + 1);
   }
 
   let bestColor: string = PERSON_COLORS[0];
   let bestCount = Number.POSITIVE_INFINITY;
-  for (const cor of PERSON_COLORS) {
-    const count = usedCounts.get(cor) ?? 0;
+  for (const color of PERSON_COLORS) {
+    const count = usedCounts.get(color) ?? 0;
     if (count < bestCount) {
       bestCount = count;
-      bestColor = cor;
+      bestColor = color;
     }
   }
   return bestColor;
 }
 
 export function usePeople(): UsePeopleReturn {
-  const [pessoas, setPessoas] = useLocalStorage<Pessoa[]>(STORAGE_KEYS.PESSOAS, []);
-  const [divisao, setDivisao] = useLocalStorage<DivisaoPedido[]>(STORAGE_KEYS.DIVISAO, []);
-
-  const getNextColor = useCallback(() => pickNextColor(pessoas), [pessoas]);
-
-  const addPessoa = useCallback(
-    (nome: string) => {
-      const trimmed = nome.trim();
-      if (trimmed.length < 2) return;
-
-      const novaPessoa: Pessoa = {
-        id: crypto.randomUUID(),
-        nome: trimmed,
-        cor: pickNextColor(pessoas),
-      };
-      setPessoas((prev) => [...prev, novaPessoa]);
-    },
-    [pessoas, setPessoas]
+  const [people, setPeople] = useLocalStorage<Person[]>(STORAGE_KEYS.PEOPLE, []);
+  const [assignments, setAssignments] = useLocalStorage<OrderAssignment[]>(
+    STORAGE_KEYS.ASSIGNMENTS,
+    []
   );
 
-  const removePessoa = useCallback(
+  const getNextColor = useCallback(() => pickNextColor(people), [people]);
+
+  const addPerson = useCallback(
+    (name: string) => {
+      const trimmed = name.trim();
+      if (trimmed.length < 2) return;
+
+      const newPerson: Person = {
+        id: crypto.randomUUID(),
+        name: trimmed,
+        color: pickNextColor(people),
+      };
+      setPeople((prev) => [...prev, newPerson]);
+    },
+    [people, setPeople]
+  );
+
+  const removePerson = useCallback(
     (id: string) => {
-      setPessoas((prev) => prev.filter((pessoa) => pessoa.id !== id));
-      setDivisao((prev) =>
+      setPeople((prev) => prev.filter((person) => person.id !== id));
+      setAssignments((prev) =>
         prev
           .map((item) => ({
             ...item,
-            pessoaIds: item.pessoaIds.filter((pessoaId) => pessoaId !== id),
+            personIds: item.personIds.filter((personId) => personId !== id),
           }))
-          .filter((item) => item.pessoaIds.length > 0)
+          .filter((item) => item.personIds.length > 0)
       );
     },
-    [setPessoas, setDivisao]
+    [setPeople, setAssignments]
   );
 
-  const atribuirPessoaAoPedido = useCallback(
-    (pedidoId: string, pessoaId: string) => {
-      setDivisao((prev) => {
-        const existing = prev.find((item) => item.pedidoId === pedidoId);
+  const assignPersonToOrder = useCallback(
+    (orderId: string, personId: string) => {
+      setAssignments((prev) => {
+        const existing = prev.find((item) => item.orderId === orderId);
         if (!existing) {
-          return [...prev, { pedidoId, pessoaIds: [pessoaId] }];
+          return [...prev, { orderId, personIds: [personId] }];
         }
-        if (existing.pessoaIds.includes(pessoaId)) {
+        if (existing.personIds.includes(personId)) {
           return prev;
         }
         return prev.map((item) =>
-          item.pedidoId === pedidoId
-            ? { ...item, pessoaIds: [...item.pessoaIds, pessoaId] }
+          item.orderId === orderId
+            ? { ...item, personIds: [...item.personIds, personId] }
             : item
         );
       });
     },
-    [setDivisao]
+    [setAssignments]
   );
 
-  const removerPessoaDoPedido = useCallback(
-    (pedidoId: string, pessoaId: string) => {
-      setDivisao((prev) =>
+  const removePersonFromOrder = useCallback(
+    (orderId: string, personId: string) => {
+      setAssignments((prev) =>
         prev
           .map((item) =>
-            item.pedidoId === pedidoId
-              ? { ...item, pessoaIds: item.pessoaIds.filter((id) => id !== pessoaId) }
+            item.orderId === orderId
+              ? { ...item, personIds: item.personIds.filter((id) => id !== personId) }
               : item
           )
-          .filter((item) => item.pessoaIds.length > 0)
+          .filter((item) => item.personIds.length > 0)
       );
     },
-    [setDivisao]
+    [setAssignments]
   );
 
-  const getPessoasDoPedido = useCallback(
-    (pedidoId: string): Pessoa[] => {
-      const entry = divisao.find((item) => item.pedidoId === pedidoId);
+  const getPeopleForOrder = useCallback(
+    (orderId: string): Person[] => {
+      const entry = assignments.find((item) => item.orderId === orderId);
       if (!entry) return [];
-      return entry.pessoaIds
-        .map((pessoaId) => pessoas.find((pessoa) => pessoa.id === pessoaId))
-        .filter((pessoa): pessoa is Pessoa => pessoa !== undefined);
+      return entry.personIds
+        .map((personId) => people.find((person) => person.id === personId))
+        .filter((person): person is Person => person !== undefined);
     },
-    [divisao, pessoas]
+    [assignments, people]
   );
 
-  const todosOsPedidosTemPessoas = useCallback(
-    (pedidos: Pedido[]): boolean => {
-      if (pedidos.length === 0) return false;
-      return pedidos.every((pedido) => {
-        const entry = divisao.find((item) => item.pedidoId === pedido.id);
-        return !!entry && entry.pessoaIds.length > 0;
+  const allOrdersHavePeople = useCallback(
+    (orders: Order[]): boolean => {
+      if (orders.length === 0) return false;
+      return orders.every((order) => {
+        const entry = assignments.find((item) => item.orderId === order.id);
+        return !!entry && entry.personIds.length > 0;
       });
     },
-    [divisao]
+    [assignments]
   );
 
   return {
-    pessoas,
-    divisao,
-    addPessoa,
-    removePessoa,
-    atribuirPessoaAoPedido,
-    removerPessoaDoPedido,
-    getPessoasDoPedido,
-    todosOsPedidosTemPessoas,
+    people,
+    assignments,
+    addPerson,
+    removePerson,
+    assignPersonToOrder,
+    removePersonFromOrder,
+    getPeopleForOrder,
+    allOrdersHavePeople,
     getNextColor,
   };
 }

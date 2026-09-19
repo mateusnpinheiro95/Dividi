@@ -7,21 +7,21 @@ import {
   OrderItem,
   PageHeader,
 } from '@/components';
-import { DEFAULT_MESA_ID, ROUTES } from '@/constants';
+import { DEFAULT_TABLE_LABEL, ROUTES } from '@/constants';
 import { useOrders } from '@/hooks';
 import { formatCurrency } from '@/utils';
 
 export const OrdersPage = () => {
   const navigate = useNavigate();
-  const { pedidos, addPedido, removePedido, calcularTotal } = useOrders();
+  const { orders, addOrder, removeOrder, getTotal } = useOrders();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const total = calcularTotal();
-  const canProceed = pedidos.length > 0;
+  const total = getTotal();
+  const canProceed = orders.length > 0;
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <PageHeader title="Comanda" subtitle={DEFAULT_MESA_ID} />
+      <PageHeader title="Comanda" subtitle={DEFAULT_TABLE_LABEL} />
 
       <div className="flex-1 flex flex-col container-mobile py-5 pb-4">
         <section className="flex items-start justify-between gap-3 mb-4">
@@ -52,7 +52,7 @@ export const OrdersPage = () => {
         </section>
 
         <section className="flex-1 flex flex-col gap-3 min-h-0 overflow-y-auto" aria-label="Lista de pedidos">
-          {pedidos.length === 0 ? (
+          {orders.length === 0 ? (
             <div className="flex-1 flex items-center justify-center py-12">
               <p className="text-sm text-gray-400 text-center">
                 Nenhum item adicionado.
@@ -61,8 +61,8 @@ export const OrdersPage = () => {
               </p>
             </div>
           ) : (
-            pedidos.map((pedido) => (
-              <OrderItem key={pedido.id} pedido={pedido} onRemove={removePedido} />
+            orders.map((order) => (
+              <OrderItem key={order.id} order={order} onRemove={removeOrder} />
             ))
           )}
         </section>
@@ -107,7 +107,7 @@ export const OrdersPage = () => {
       <AddOrderModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onAdd={addPedido}
+        onAdd={addOrder}
       />
     </div>
   );

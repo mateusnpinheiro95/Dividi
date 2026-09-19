@@ -1,5 +1,5 @@
 /**
- * Formata um número para moeda brasileira (BRL)
+ * Formats a number as Brazilian currency (BRL)
  */
 export const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('pt-BR', {
@@ -9,10 +9,10 @@ export const formatCurrency = (value: number): string => {
 };
 
 /**
- * Retorna a inicial maiúscula do nome (primeira palavra)
+ * Returns the uppercase initial of the name (first word)
  */
-export const getInitials = (nome: string): string => {
-  const trimmed = nome.trim();
+export const getInitials = (name: string): string => {
+  const trimmed = name.trim();
   if (!trimmed) return '?';
   return trimmed.charAt(0).toUpperCase();
 };

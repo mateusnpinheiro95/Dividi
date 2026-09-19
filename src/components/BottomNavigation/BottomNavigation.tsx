@@ -101,9 +101,27 @@ export const BottomNavigation = ({ currentStep }: BottomNavigationProps) => {
                           : 'bg-primary-50 text-gray-400'
                     }`}
                     aria-current={isActive ? 'step' : undefined}
-                    aria-label={`Etapa ${item.step}: ${item.label}${isActive ? ' (atual)' : ''}`}
+                    aria-label={`Etapa ${item.step}: ${item.label}${isActive ? ' (atual)' : isCompleted ? ' (concluída)' : ''}`}
                   >
-                    {item.icon}
+                    {isCompleted ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2.5}
+                        stroke="currentColor"
+                        className="size-5"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="m4.5 12.75 6 6 9-13.5"
+                        />
+                      </svg>
+                    ) : (
+                      item.icon
+                    )}
                   </span>
                 </div>
 

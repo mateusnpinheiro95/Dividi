@@ -7,38 +7,38 @@ import {
   OrderDivisionCard,
   PageHeader,
 } from '@/components';
-import { DEFAULT_MESA_ID, ROUTES } from '@/constants';
+import { DEFAULT_TABLE_LABEL, ROUTES } from '@/constants';
 import { useOrders, usePeople } from '@/hooks';
 import { getInitials } from '@/utils';
 
 export const PeoplePage = () => {
   const navigate = useNavigate();
-  const { pedidos } = useOrders();
+  const { orders } = useOrders();
   const {
-    pessoas,
-    addPessoa,
-    removePessoa,
-    atribuirPessoaAoPedido,
-    removerPessoaDoPedido,
-    getPessoasDoPedido,
-    todosOsPedidosTemPessoas,
+    people,
+    addPerson,
+    removePerson,
+    assignPersonToOrder,
+    removePersonFromOrder,
+    getPeopleForOrder,
+    allOrdersHavePeople,
     getNextColor,
   } = usePeople();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const hasPedidos = pedidos.length > 0;
-  const hasPessoas = pessoas.length > 0;
-  const canProceed = hasPedidos && hasPessoas && todosOsPedidosTemPessoas(pedidos);
-  const pedidosSemPessoas = pedidos.filter(
-    (pedido) => getPessoasDoPedido(pedido.id).length === 0
+  const hasOrders = orders.length > 0;
+  const hasPeople = people.length > 0;
+  const canProceed = hasOrders && hasPeople && allOrdersHavePeople(orders);
+  const ordersWithoutPeople = orders.filter(
+    (order) => getPeopleForOrder(order.id).length === 0
   ).length;
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       <PageHeader
         title="Pessoas"
-        subtitle={DEFAULT_MESA_ID}
+        subtitle={DEFAULT_TABLE_LABEL}
         onBack={() => navigate(ROUTES.HOME)}
       />
 
@@ -71,7 +71,7 @@ export const PeoplePage = () => {
             </Button>
           </div>
 
-          {!hasPessoas ? (
+          {!hasPeople ? (
             <div className="py-8 text-center">
               <p className="text-sm text-gray-400">
                 Nenhuma pessoa adicionada.
@@ -85,26 +85,26 @@ export const PeoplePage = () => {
               role="list"
               aria-label="Lista de pessoas (role horizontalmente)"
             >
-              {pessoas.map((pessoa) => (
+              {people.map((person) => (
                 <li
-                  key={pessoa.id}
+                  key={person.id}
                   className="shrink-0 w-[calc((100%-0.75rem)/2)] snap-start"
                 >
                   <div className="card flex flex-col items-center gap-2 py-4 relative h-full min-h-[104px]">
                     <span
                       className="inline-flex items-center justify-center size-12 rounded-full text-white text-lg font-semibold"
-                      style={{ backgroundColor: pessoa.cor }}
+                      style={{ backgroundColor: person.color }}
                       aria-hidden="true"
                     >
-                      {getInitials(pessoa.nome)}
+                      {getInitials(person.name)}
                     </span>
                     <span className="text-sm font-medium text-gray-900 truncate max-w-full px-1">
-                      {pessoa.nome}
+                      {person.name}
                     </span>
                     <button
                       type="button"
-                      onClick={() => removePessoa(pessoa.id)}
-                      aria-label={`Remover ${pessoa.nome}`}
+                      onClick={() => removePerson(person.id)}
+                      aria-label={`Remover ${person.name}`}
                       className="absolute top-1 right-1 flex items-center justify-center size-11 text-gray-400 rounded-lg active:bg-gray-100 active:text-red-600"
                     >
                       <svg
@@ -161,7 +161,7 @@ export const PeoplePage = () => {
             </p>
           </div>
 
-          {!hasPedidos ? (
+          {!hasOrders ? (
             <div className="flex-1 flex items-center justify-center py-8">
               <p className="text-sm text-gray-400 text-center">
                 Nenhum pedido na comanda.
@@ -171,14 +171,14 @@ export const PeoplePage = () => {
             </div>
           ) : (
             <div className="flex flex-col gap-3 overflow-y-auto min-h-0 pb-2">
-              {pedidos.map((pedido) => (
+              {orders.map((order) => (
                 <OrderDivisionCard
-                  key={pedido.id}
-                  pedido={pedido}
-                  pessoasAtribuidas={getPessoasDoPedido(pedido.id)}
-                  todasPessoas={pessoas}
-                  onAddPerson={(pessoaId) => atribuirPessoaAoPedido(pedido.id, pessoaId)}
-                  onRemovePerson={(pessoaId) => removerPessoaDoPedido(pedido.id, pessoaId)}
+                  key={order.id}
+                  order={order}
+                  assignedPeople={getPeopleForOrder(order.id)}
+                  allPeople={people}
+                  onAddPerson={(personId) => assignPersonToOrder(order.id, personId)}
+                  onRemovePerson={(personId) => removePersonFromOrder(order.id, personId)}
                 />
               ))}
             </div>
@@ -186,11 +186,11 @@ export const PeoplePage = () => {
         </section>
 
         <div className="mt-4 shrink-0 flex flex-col gap-3">
-          {hasPedidos && hasPessoas && pedidosSemPessoas > 0 ? (
+          {hasOrders && hasPeople && ordersWithoutPeople > 0 ? (
             <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2" role="status">
-              {pedidosSemPessoas === 1
+              {ordersWithoutPeople === 1
                 ? '1 pedido ainda sem pessoas atribuídas.'
-                : `${pedidosSemPessoas} pedidos ainda sem pessoas atribuídas.`}
+                : `${ordersWithoutPeople} pedidos ainda sem pessoas atribuídas.`}
             </p>
           ) : null}
 
@@ -199,9 +199,7 @@ export const PeoplePage = () => {
             variant="primary"
             fullWidth
             disabled={!canProceed}
-            onClick={() => {
-              // Próxima etapa (Gorjeta) será implementada depois
-            }}
+            onClick={() => navigate(ROUTES.TIP)}
           >
             Próximo
             <svg
@@ -228,7 +226,7 @@ export const PeoplePage = () => {
       <AddPersonModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onAdd={addPessoa}
+        onAdd={addPerson}
         nextColor={getNextColor()}
       />
     </div>
