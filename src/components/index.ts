@@ -11,3 +11,4 @@ export { OrderDivisionCard } from './OrderDivisionCard';
 export { TipTypeSelector } from './TipTypeSelector';
 export { TipAmountControl } from './TipAmountControl';
 export { TipParticipantToggle } from './TipParticipantToggle';
+export { PersonSummaryItem } from './PersonSummaryItem';

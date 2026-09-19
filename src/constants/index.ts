@@ -6,6 +6,7 @@ export const ROUTES = {
   ORDERS: '/orders',
   PEOPLE: '/people',
   TIP: '/tip',
+  SUMMARY: '/summary',
 } as const;
 
 /** Legacy Portuguese routes kept for redirects */
@@ -13,6 +14,7 @@ export const LEGACY_ROUTES = {
   ORDERS: '/pedidos',
   PEOPLE: '/pessoas',
   TIP: '/gorjeta',
+  SUMMARY: '/resumo',
 } as const;
 
 export const STORAGE_KEYS = {

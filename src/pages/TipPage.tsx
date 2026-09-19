@@ -131,9 +131,7 @@ export const TipPage = () => {
             variant="primary"
             fullWidth
             disabled={!canProceed || !hasPeople}
-            onClick={() => {
-              // Next step (Summary) will be implemented later
-            }}
+            onClick={() => navigate(ROUTES.SUMMARY)}
           >
             Próximo
             <svg

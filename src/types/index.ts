@@ -36,3 +36,12 @@ export interface TipConfig {
   /** Person IDs already seen — used to detect new people and include them by default */
   knownPersonIds: string[];
 }
+
+export interface PersonSummary {
+  personId: string;
+  name: string;
+  color: string;
+  orderTotal: number;
+  tipAmount: number;
+  total: number;
+}

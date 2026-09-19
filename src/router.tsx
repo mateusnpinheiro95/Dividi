@@ -1,6 +1,6 @@
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { MainLayout } from '@/layouts';
-import { OrdersPage, PeoplePage, TipPage } from '@/pages';
+import { OrdersPage, PeoplePage, TipPage, SummaryPage } from '@/pages';
 import { LEGACY_ROUTES, ROUTES } from '@/constants';
 
 /**
@@ -35,6 +35,14 @@ const router = createBrowserRouter([
       </MainLayout>
     ),
   },
+  {
+    path: ROUTES.SUMMARY,
+    element: (
+      <MainLayout>
+        <SummaryPage />
+      </MainLayout>
+    ),
+  },
   // Legacy Portuguese path redirects
   {
     path: LEGACY_ROUTES.ORDERS,
@@ -47,6 +55,10 @@ const router = createBrowserRouter([
   {
     path: LEGACY_ROUTES.TIP,
     element: <Navigate to={ROUTES.TIP} replace />,
+  },
+  {
+    path: LEGACY_ROUTES.SUMMARY,
+    element: <Navigate to={ROUTES.SUMMARY} replace />,
   },
 ]);
 
