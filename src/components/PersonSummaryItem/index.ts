@@ -1,0 +1,1 @@
+export { PersonSummaryItem } from './PersonSummaryItem';
